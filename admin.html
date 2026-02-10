@@ -1,55 +1,73 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
-  <title>Admin · Sabores de Pereira</title>
+  <title>Panel · Sabores de Pereira</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
       margin: 0;
-      font-family: Segoe UI, Tahoma, sans-serif;
-      background: #f3f4f6;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f5f9;
     }
 
     header {
-      background: #111827;
+      background: linear-gradient(135deg, #111827, #1f2937);
       color: white;
-      padding: 18px;
+      padding: 22px;
       text-align: center;
+      font-size: 22px;
       font-weight: 900;
-      font-size: 20px;
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: auto;
       padding: 20px;
     }
 
-    input,
-    select {
+    input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      margin-bottom: 20px;
+      font-size: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,.08);
+    }
+
+    h2 {
+      margin-top: 30px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .seccion {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
     }
 
     .pedido {
       background: white;
       padding: 14px;
-      border-radius: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.1);
       cursor: pointer;
+      transition: transform .15s;
+    }
+
+    .pedido:hover {
+      transform: scale(1.02);
     }
 
     .pedido-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      font-weight: 700;
     }
 
     .codigo {
@@ -57,27 +75,30 @@
       color: white;
       padding: 4px 10px;
       border-radius: 10px;
-      font-size: 13px;
+      font-size: 12px;
     }
 
-    .estado {
+    .fecha {
       font-size: 13px;
-      font-weight: 800;
+      color: #6b7280;
+      margin-top: 6px;
     }
 
     .total {
       color: #16a34a;
       font-weight: 900;
+      margin-top: 6px;
     }
 
     /* MODAL */
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, .6);
+      background: rgba(0,0,0,.6);
       display: none;
       align-items: center;
       justify-content: center;
+      z-index: 10;
     }
 
     .modal.active {
@@ -88,159 +109,209 @@
       background: white;
       width: 90%;
       max-width: 520px;
-      border-radius: 18px;
-      padding: 20px;
+      border-radius: 20px;
+      padding: 22px;
       max-height: 85%;
       overflow: auto;
     }
 
     .close {
       text-align: right;
+      font-weight: 800;
       color: #ef4444;
-      font-weight: 700;
       cursor: pointer;
     }
 
-    /* FOOTER */
-    footer {
-      background: #111827;
-      color: #ddd;
-      padding: 25px;
-      text-align: center;
-      font-size: 13px;
+    select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 16px;
+      font-weight: 700;
     }
 
-    footer strong {
-      color: white;
+    footer {
+      margin-top: 50px;
+      background: #111827;
+      color: #ddd;
+      padding: 22px;
+      text-align: center;
+      font-size: 13px;
     }
   </style>
 </head>
 
 <body>
 
-  <header>📦 Panel de Pedidos · Sabores de Pereira</header>
+<header>📦 Panel de Pedidos · Sabores de Pereira</header>
 
-  <div class="container">
-    <input type="search" id="search" placeholder="Buscar por nombre o código">
-    <div id="lista"></div>
+<div class="container">
+  <input type="search" id="search" placeholder="🔍 Buscar por nombre o código">
+
+  <h2>🆕 Nuevos</h2>
+  <div id="nuevo" class="seccion"></div>
+
+  <h2>✅ Confirmados</h2>
+  <div id="confirmado" class="seccion"></div>
+
+  <h2>🍳 Listos</h2>
+  <div id="listo" class="seccion"></div>
+
+  <h2>🚚 Entregados</h2>
+  <div id="entregado" class="seccion"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="close" onclick="cerrarModal()">Cerrar ✖</div>
+    <div id="detalle"></div>
   </div>
+</div>
 
-  <!-- MODAL -->
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <div class="close" onclick="cerrarModal()">Cerrar ✖</div>
-      <div id="detalle"></div>
-    </div>
-  </div>
+<footer>
+  <strong>SABORES DE PEREIRA</strong><br>
+  Panel interno · © 2026
+</footer>
 
-  <footer>
-    <strong>SABORES DE PEREIRA</strong><br>
-    📍 Pereira, Colombia<br>
-    📞 +56 9 5651 0930<br>
-    ⏰ Horario: 17:00 a 23:00<br>
-    © 2026 · Panel interno
-  </footer>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {
+    getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  <script type="module">
-    /* ================= FIREBASE ================= */
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      onSnapshot,
-      query,
-      orderBy,
-      doc,
-      updateDoc
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHYo8LYSyOqgr6tBgo9RXODH0KRwZeowQ",
+    authDomain: "live-de-eso.firebaseapp.com",
+    projectId: "live-de-eso",
+    storageBucket: "live-de-eso.firebasestorage.app",
+    messagingSenderId: "250545251960",
+    appId: "1:250545251960:web:94ad354f2650d46d32af8d"
+  };
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCHYo8LYSyOqgr6tBgo9RXODH0KRwZeowQ",
-      authDomain: "live-de-eso.firebaseapp.com",
-      projectId: "live-de-eso",
-      storageBucket: "live-de-eso.firebasestorage.app",
-      messagingSenderId: "250545251960",
-      appId: "1:250545251960:web:94ad354f2650d46d32af8d"
-    };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  // 🔔 Permiso notificaciones
+  if ("Notification" in window && Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
 
-    /* ================= PEDIDOS ================= */
-    const lista = document.getElementById("lista");
-    const search = document.getElementById("search");
-    const modal = document.getElementById("modal");
-    const detalle = document.getElementById("detalle");
-    let pedidos = [];
+  const search = document.getElementById("search");
+  const modal = document.getElementById("modal");
+  const detalle = document.getElementById("detalle");
 
-    const q = query(collection(db, "pedidos"), orderBy("fecha", "desc"));
+  const secciones = {
+    nuevo: document.getElementById("nuevo"),
+    confirmado: document.getElementById("confirmado"),
+    listo: document.getElementById("listo"),
+    entregado: document.getElementById("entregado")
+  };
 
-    onSnapshot(q, snap => {
-      pedidos = [];
-      snap.forEach(d => pedidos.push({ id: d.id, ...d.data() }));
-      render();
+  let pedidos = [];
+  let pedidosPrevios = [];
+
+  const q = query(collection(db, "pedidos"), orderBy("fecha", "desc"));
+
+  onSnapshot(q, snap => {
+    const nuevos = [];
+    pedidos = [];
+
+    snap.forEach(d => {
+      const p = { id: d.id, ...d.data() };
+      pedidos.push(p);
+
+      if (!pedidosPrevios.find(x => x.id === p.id)) {
+        nuevos.push(p);
+      }
     });
 
-    function render() {
-      const f = search.value.toLowerCase();
-      lista.innerHTML = "";
-      pedidos
-        .filter(p =>
-          p.codigo.toLowerCase().includes(f) ||
-          p.cliente.nombre.toLowerCase().includes(f)
-        )
-        .forEach(p => {
-          const fecha = p.fecha?.toDate().toLocaleString();
-          const div = document.createElement("div");
-          div.className = "pedido";
-          div.innerHTML = `
+    nuevos.forEach(p => {
+      if (p.estado === "nuevo") {
+        notificar("🆕 Pedido nuevo", `${p.codigo} · ${p.cliente.nombre}`);
+      }
+    });
+
+    pedidosPrevios = pedidos.map(p => ({ id: p.id }));
+    render();
+  });
+
+  function fechaChile(ts) {
+    return ts.toDate().toLocaleString("es-CL", {
+      timeZone: "America/Santiago",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  function render() {
+    Object.values(secciones).forEach(s => s.innerHTML = "");
+    const f = search.value.toLowerCase();
+
+    pedidos.filter(p =>
+      p.codigo.toLowerCase().includes(f) ||
+      p.cliente.nombre.toLowerCase().includes(f)
+    ).forEach(p => {
+      const div = document.createElement("div");
+      div.className = "pedido";
+      div.innerHTML = `
         <div class="pedido-header">
           <div>${p.cliente.nombre}</div>
           <div class="codigo">${p.codigo}</div>
         </div>
-        <div>${fecha}</div>
+        <div class="fecha">⏰ ${fechaChile(p.fecha)}</div>
         <div class="total">$${p.total}</div>
-        <div class="estado">Estado: ${p.estado}</div>
       `;
-          div.onclick = () => verDetalle(p);
-          lista.appendChild(div);
-        });
+      div.onclick = () => verDetalle(p);
+      secciones[p.estado]?.appendChild(div);
+    });
+  }
+
+  search.oninput = render;
+
+  function verDetalle(p) {
+    detalle.innerHTML = `
+      <h3>Pedido ${p.codigo}</h3>
+      <p><b>Cliente:</b> ${p.cliente.nombre}</p>
+      <p><b>Teléfono:</b> ${p.cliente.telefono}</p>
+      <p><b>Enviado:</b> ${fechaChile(p.fecha)}</p>
+
+      <h4>Productos</h4>
+      <ul>
+        ${p.items.map(i => `<li>${i.name} ${i.size ?? ""} - $${i.price}</li>`).join("")}
+      </ul>
+
+      <p><b>Total:</b> $${p.total}</p>
+
+      <select onchange="cambiarEstado('${p.id}', this.value)">
+        <option ${p.estado === "nuevo" ? "selected" : ""}>nuevo</option>
+        <option ${p.estado === "confirmado" ? "selected" : ""}>confirmado</option>
+        <option ${p.estado === "listo" ? "selected" : ""}>listo</option>
+        <option ${p.estado === "entregado" ? "selected" : ""}>entregado</option>
+      </select>
+    `;
+    modal.classList.add("active");
+  }
+
+  window.cerrarModal = () => modal.classList.remove("active");
+
+  window.cambiarEstado = async (id, estado) => {
+    await updateDoc(doc(db, "pedidos", id), { estado });
+    cerrarModal();
+  };
+
+  function notificar(titulo, texto) {
+    if (Notification.permission === "granted") {
+      new Notification(titulo, {
+        body: texto,
+        icon: "https://cdn-icons-png.flaticon.com/512/3081/3081559.png"
+      });
     }
-    search.oninput = render;
-
-    /* ================= DETALLE ================= */
-    function verDetalle(p) {
-      detalle.innerHTML = `
-    <h3>Pedido ${p.codigo}</h3>
-    <p><b>Cliente:</b> ${p.cliente.nombre}</p>
-    <p><b>Teléfono:</b> ${p.cliente.telefono}</p>
-    <p><b>Hora:</b> ${p.fecha.toDate().toLocaleString()}</p>
-
-    <h4>Productos</h4>
-    <ul>
-      ${p.items.map(i => `<li>${i.name} ${i.size} - $${i.price}</li>`).join("")}
-    </ul>
-
-    <p><b>Total:</b> $${p.total}</p>
-
-    <select onchange="cambiarEstado('${p.id}',this.value)">
-      <option ${p.estado === "nuevo" ? "selected" : ""}>nuevo</option>
-      <option ${p.estado === "confirmado" ? "selected" : ""}>confirmado</option>
-      <option ${p.estado === "listo" ? "selected" : ""}>listo</option>
-      <option ${p.estado === "entregado" ? "selected" : ""}>entregado</option>
-    </select>
-  `;
-      modal.classList.add("active");
-    }
-
-    window.cerrarModal = () => modal.classList.remove("active");
-
-    /* ================= ESTADO ================= */
-    window.cambiarEstado = async (id, estado) => {
-      await updateDoc(doc(db, "pedidos", id), { estado });
-    };
-  </script>
+  }
+</script>
 
 </body>
-
 </html>
