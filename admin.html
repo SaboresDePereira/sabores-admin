@@ -274,12 +274,18 @@ function verDetalle(p){
     <h3>Pedido ${p.codigo}</h3>
     <p><b>Cliente:</b> ${p.cliente.nombre}</p>
     <p><b>Teléfono:</b> ${p.cliente.telefono}</p>
-    <p><b>Servicio:</b> ${p.servicio ?? "No definido"}</p>
+    <p><b>Tipo:</b> ${p.tipo ?? "No definido"}</p>
     <p><b>Enviado:</b> ${fechaChile(p.fecha)}</p>
 
     <h4>Productos</h4>
     <ul>
-      ${p.items.map(i=>`<li>${i.name} ${i.size??""} - $${i.price}</li>`).join("")}
+      ${p.items.map(i=>`
+<li>
+  ${i.name} ${i.size ?? ""} 
+  ${i.tipo ? `(${i.tipo})` : ""}
+  - $${i.price}
+</li>
+`).join("")}
     </ul>
 
     <p><b>Total:</b> $${p.total}</p>
