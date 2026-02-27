@@ -270,25 +270,41 @@ function render(){
 search.oninput=render;
 
 function verDetalle(p){
-  detalle.innerHTML=`
+
+  const comentarios = p.comentarios?.trim() 
+    ? p.comentarios 
+    : "Sin comentarios";
+
+  const tipoPedido = p.tipo?.trim() 
+    ? p.tipo 
+    : "No definido";
+
+  detalle.innerHTML = `
     <h3>Pedido ${p.codigo}</h3>
-    <p><b>Cliente:</b> ${p.cliente.nombre}</p>
-    <p><b>Teléfono:</b> ${p.cliente.telefono}</p>
-    <p><b>Tipo:</b> ${p.tipo ?? "No definido"}</p>
-    <p><b>Enviado:</b> ${fechaChile(p.fecha)}</p>
+
+    <p><b>Cliente:</b> ${p.cliente?.nombre ?? "No disponible"}</p>
+    <p><b>Teléfono:</b> ${p.cliente?.telefono ?? "No disponible"}</p>
+    <p><b>Tipo:</b> ${tipoPedido}</p>
+    <p><b>Comentarios:</b> ${comentarios}</p>
+    <p><b>Enviado:</b> ${p.fecha ? fechaChile(p.fecha) : "Sin fecha"}</p>
 
     <h4>Productos</h4>
     <ul>
-      ${p.items.map(i=>`
-<li>
-  ${i.name} ${i.size ?? ""} 
-  ${i.tipo ? `(${i.tipo})` : ""}
-  - $${i.price}
-</li>
-`).join("")}
+      ${
+        Array.isArray(p.items) 
+          ? p.items.map(i => `
+            <li>
+              ${i.name ?? "Producto"} 
+              ${i.size ?? ""} 
+              ${i.tipo ? `(${i.tipo})` : ""}
+              - $${i.price ?? 0}
+            </li>
+          `).join("")
+          : "<li>No hay productos</li>"
+      }
     </ul>
 
-    <p><b>Total:</b> $${p.total}</p>
+    <p><b>Total:</b> $${p.total ?? 0}</p>
 
     <div>
       <button class="btn btn-nuevo" onclick="cambiarEstado('${p.id}','nuevo')">Nuevo</button>
@@ -297,6 +313,7 @@ function verDetalle(p){
       <button class="btn btn-entregado" onclick="cambiarEstado('${p.id}','entregado')">Entregado</button>
     </div>
   `;
+
   modal.classList.add("active");
 }
 
